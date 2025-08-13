@@ -1,0 +1,8 @@
+:root{--ui-bg:#2b2825;--ui-edge:#1b1a18;--ui-gold:#d5b467;--ui-paper:#eee6d6}
+.ui-panel{background:var(--ui-bg);border:1px solid #000;box-shadow:inset 0 0 0 1px var(--ui-edge),0 4px 18px rgba(0,0,0,.45);
+  color:var(--ui-paper);border-radius:8px}
+.ui-title{font-family:'Cinzel',Georgia,serif;color:var(--ui-gold);font-weight:900;letter-spacing:.04em;
+  text-shadow:0 1px 0 #000,0 2px 6px rgba(0,0,0,.5)}
+.ui-btn{font-family:'Cinzel',Georgia,serif;background:linear-gradient(#375a2e,#284520);color:#e7f4df;border:1px solid #1f311b;
+  border-radius:6px;padding:.6rem 1.2rem}
+.ui-btn:hover{filter:brightness(1.1)}

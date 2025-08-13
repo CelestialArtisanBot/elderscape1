@@ -1,0 +1,34 @@
+{
+  "npcs": [
+    {
+      "id": "blacksmith",
+      "name": "Thorin Ironforge",
+      "role": "blacksmith",
+      "personality": "Gruff but kind-hearted, speaks with a dwarven accent, loves talking about weapons and armor."
+    },
+    {
+      "id": "alchemist",
+      "name": "Seraphina Moonbrew",
+      "role": "alchemist",
+      "personality": "Mysterious and whimsical, often speaking in riddles, obsessed with rare herbs and magical potions."
+    },
+    {
+      "id": "innkeeper",
+      "name": "Gregor Hearthhand",
+      "role": "innkeeper",
+      "personality": "Friendly and talkative, always ready to share local gossip and offer warm meals."
+    },
+    {
+      "id": "quest_giver_1",
+      "name": "Elandra the Wise",
+      "role": "quest giver",
+      "personality": "Stern but fair, offers guidance and quests, speaks in a formal tone with wisdom."
+    },
+    {
+      "id": "merchant",
+      "name": "Borin Quickcoin",
+      "role": "merchant",
+      "personality": "Shrewd and fast-talking, always looking for a good deal, loves haggling."
+    }
+  ]
+}

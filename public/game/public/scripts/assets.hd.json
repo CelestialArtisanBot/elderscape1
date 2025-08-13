@@ -1,0 +1,24 @@
+{
+  "tiles": {
+    "grass": "assets/hd/tiles/grass_64.png",
+    "stone": "assets/hd/tiles/stone_64.png",
+    "bank_wall": "assets/hd/tiles/bank_wall_64.png",
+    "bank_floor": "assets/hd/tiles/bank_floor_64.png",
+    "cave": "assets/hd/tiles/cave_64.png"
+  },
+  "characters": {
+    "fey_m": "assets/hd/characters/fey_m_idle.png",
+    "dwarven_m": "assets/hd/characters/dwarven_m_idle.png",
+    "trollkin_m": "assets/hd/characters/trollkin_m_idle.png",
+    "undead_m": "assets/hd/characters/undead_m_idle.png"
+  },
+  "items": {
+    "bronze_sword": "assets/hd/items/bronze_sword.png",
+    "leather_armor": "assets/hd/items/leather_armor.png"
+  },
+  "ui": {
+    "panel": "assets/hd/ui/panel_9s.png",
+    "button": "assets/hd/ui/button_9s.png",
+    "portrait_frame": "assets/hd/ui/portrait_frame.png"
+  }
+}
