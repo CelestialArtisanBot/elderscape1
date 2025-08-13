@@ -1,99 +1,139 @@
-// public/game-bridge.js
-(function(){
-  const frame = document.getElementById('game-frame');
-  const fpsBox = document.getElementById('fps');
+const currentPlayerId = "player123";
 
-  // ===== Fit-to-window with zoom-out (no stretch) =====
-  // We read the game's designed base resolution (fallback 1280x720) and compute a uniform scale.
-  let baseW = 1280, baseH = 720; // update if your game advertises a different base size via postMessage
-  function applyScale(){
-    if (!frame) return;
-    const wrap = frame.parentElement.getBoundingClientRect();
-    const scale = Math.min(wrap.width / baseW, wrap.height / baseH);
+// --- Chat State ---
+let activeChannel = "world";
+const chatTabs  = document.querySelectorAll("#chat-tabs button");
+const chatLog   = document.getElementById("chat-log");
+const chatInput = document.getElementById("chat-input");
+const chatSend  = document.getElementById("chat-send");
 
-    // Size iframe to base, then scale it; center it in wrapper
-    frame.style.width = baseW + 'px';
-    frame.style.height = baseH + 'px';
-    frame.style.transform = `scale(${scale})`;
+const chatHistory = {
+  world:   [],
+  public:  [],
+  friends: [],
+  group:   [],
+  npc:     []
+};
 
-    const xPad = (wrap.width - baseW * scale) / 2;
-    const yPad = (wrap.height - baseH * scale) / 2;
-    frame.style.left = `${xPad}px`;
-    frame.style.top = `${yPad}px`;
-  }
-  window.addEventListener('resize', applyScale);
-  window.addEventListener('orientationchange', applyScale);
-
-  // Ask the game for its base resolution (optional)
-  function requestGameMeta(){
-    try{
-      frame.contentWindow.postMessage({type:'gc:GetMeta'}, location.origin);
-    }catch{}
-  }
-  frame.addEventListener('load', ()=>{
-    applyScale();
-    requestGameMeta();
+// Switch chat channel
+chatTabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    chatTabs.forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    activeChannel = tab.dataset.channel;
+    renderChatHistory();
   });
+});
 
-  // ===== FPS overlay (click-through) =====
-  // If the game sends us frame ticks, use that; else fall back to local rAF.
-  let last = performance.now(), frames = 0, fps = 60;
-  let tickTimer = null;
-  function localFpsLoop(t){
-    frames++;
-    if (t - last >= 1000){
-      fps = frames;
-      fpsBox.textContent = `FPS — ${fps}`;
-      frames = 0; last = t;
-    }
-    requestAnimationFrame(localFpsLoop);
+function renderChatHistory() {
+  chatLog.innerHTML = "";
+  chatHistory[activeChannel].forEach(line => chatLog.appendChild(line));
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+function addChatMessage(channel, sender, message) {
+  const line = document.createElement("div");
+  line.className = `chat-line chat-${channel}`;
+  const tag = document.createElement("span");
+  tag.className = "chat-tag";
+  tag.textContent = `[${channel.toUpperCase()}] ${sender}: `;
+  line.appendChild(tag);
+  line.appendChild(document.createTextNode(message));
+  chatHistory[channel].push(line);
+  if (channel === activeChannel) {
+    chatLog.appendChild(line);
+    chatLog.scrollTop = chatLog.scrollHeight;
   }
-  requestAnimationFrame(localFpsLoop);
+}
 
-  // ===== God Controller bridge =====
-  function sendGC(command){
-    // Free-form text command; the game parses it internally
-    try{
-      frame.contentWindow.postMessage({type:'gc:Command', command}, location.origin);
-    }catch(e){
-      console.warn('GC send failed', e);
-    }
+// Send chat message to backend
+function sendChatMessage(channel, message) {
+  if (!message.trim()) return;
+  addChatMessage(channel, "You", message);
+  fetch(`/chat/send`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ playerId: currentPlayerId, channel, message })
+  }).catch(console.error);
+}
+
+chatSend.addEventListener("click", () => {
+  sendChatMessage(activeChannel, chatInput.value);
+  chatInput.value = "";
+});
+
+chatInput.addEventListener("keypress", e => {
+  if (e.key === "Enter") {
+    sendChatMessage(activeChannel, chatInput.value);
+    chatInput.value = "";
   }
-  window.GameBridge = { sendGC };
+});
 
-  // ===== Listen to messages FROM game =====
-  window.addEventListener('message', (ev)=>{
-    if (ev.origin !== location.origin) return;
-    const data = ev.data || {};
-    switch(data.type){
-      case 'game:Meta': {
-        if (data.baseWidth && data.baseHeight){
-          baseW = data.baseWidth; baseH = data.baseHeight;
-          applyScale();
-        }
-        break;
-      }
-      case 'game:FPSTick': {
-        // If the game sends its FPS, prefer that
-        if (typeof data.fps === 'number'){
-          fpsBox.textContent = `FPS — ${Math.round(data.fps)}`;
-        }
-        break;
-      }
-      case 'game:Notify': {
-        // Surface small notifications into the God Controller chat
-        const messages = document.getElementById('messages');
-        if (messages){
-          const div = document.createElement('div');
-          div.className = 'msg assistant';
-          div.textContent = `[Game] ${data.text}`;
-          messages.appendChild(div);
-          messages.scrollTop = messages.scrollHeight;
-        }
-        break;
-      }
-      default: break;
-    }
+// --- NPC Dialogue ---
+function interactWithNPC(npcId) {
+  fetch(`/npc/${npcId}/dialogue?playerId=${currentPlayerId}`)
+    .then(res => res.json())
+    .then(dialogueData => {
+      addChatMessage("npc", "NPC", dialogueData.text);
+      showNPCDialogue(dialogueData.text, dialogueData.options);
+    })
+    .catch(console.error);
+}
+
+function showNPCDialogue(text, options) {
+  const npcDialogue = document.getElementById("npc-dialogue");
+  const npcText     = document.getElementById("npc-text");
+  const npcOptions  = document.getElementById("npc-options");
+
+  npcText.textContent = text;
+  npcOptions.innerHTML = "";
+  options.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.textContent = opt.text;
+    btn.addEventListener("click", () => chooseNPCOption(opt.id));
+    npcOptions.appendChild(btn);
   });
+  npcDialogue.classList.remove("hidden");
+  document.body.classList.add("npc-active");
+}
 
-})();
+function chooseNPCOption(optionId) {
+  fetch(`/npc/${optionId}/choose`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ playerId: currentPlayerId })
+  })
+    .then(res => res.json())
+    .then(response => {
+      addChatMessage("npc", "NPC", response.text);
+      if (response.endDialogue) {
+        closeNPCDialogue();
+      } else {
+        showNPCDialogue(response.text, response.options);
+      }
+    })
+    .catch(console.error);
+}
+
+function closeNPCDialogue() {
+  const npcDialogue = document.getElementById("npc-dialogue");
+  npcDialogue.classList.add("hidden");
+  document.body.classList.remove("npc-active");
+}
+
+// --- Quest Reminders ---
+function remindQuestProgress() {
+  fetch(`/player/${currentPlayerId}/state`)
+    .then(res => res.json())
+    .then(state => {
+      if (state.quests) {
+        state.quests.forEach(q => {
+          addChatMessage("npc", "Quest Giver", `You are ${q.percent}% done with "${q.name}"`);
+        });
+      }
+    })
+    .catch(console.error);
+}
+
+setInterval(remindQuestProgress, 5 * 60 * 1000);
+

@@ -1,224 +1,163 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
-    <title>ElderScape • God Controller + Game</title>
-    <style>
-      :root{
-        --primary:#f6821f; --primary-hover:#e67e22;
-        --bg:#0b0e14; --panel:#11151d; --border:#1f2430;
-        --text:#e6e6e6; --muted:#9aa4b2;
-        --user:#1a2332; --assistant:#141a24;
-        --fps-bg: rgba(30, 144, 255, 0.28);
-      }
-      *{box-sizing:border-box}
-      html,body{height:100%}
-      body{
-        margin:0; background:var(--bg); color:var(--text);
-        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
-      }
-      /* Layout: top = God Controller, bottom = Game */
-      .page{
-        display:grid; gap:10px; padding:10px;
-        grid-template-rows: minmax(330px, 46vh) minmax(300px, 1fr);
-        height:100vh; width:100vw;
-      }
-      @media (max-width: 740px){
-        .page{grid-template-rows: minmax(360px, 54vh) minmax(260px, 1fr);}
-      }
+<head>
+<meta charset="UTF-8">
+<title>ElderScape HD</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+/* ===== ElderScape UI Styles ===== */
 
-      /* Chat (God Controller) */
-      .gc{
-        display:flex; flex-direction:column; border:1px solid var(--border);
-        background:var(--panel); border-radius:12px; overflow:hidden;
-        backdrop-filter: blur(4px);
-      }
-      header{
-        padding:10px 12px; border-bottom:1px solid var(--border);
-        display:flex; align-items:center; justify-content:space-between;
-        background:linear-gradient(180deg, rgba(255,255,255,.02), transparent);
-      }
-      header h1{font-size:16px; margin:0; letter-spacing:.3px}
-      header .hint{font-size:12px; color:var(--muted)}
-      .chat{
-        display:flex; flex-direction:column; min-height:0; flex:1;
-      }
-      .messages{
-        flex:1; overflow:auto; padding:12px; background:radial-gradient(60% 100% at 50% 0%, rgba(255,255,255,.02), transparent);
-      }
-      .msg{max-width:80%; padding:10px 12px; border-radius:10px; margin:6px 0}
-      .msg.user{background:var(--user); margin-left:auto}
-      .msg.assistant{background:var(--assistant); margin-right:auto}
-      .typing{color:var(--muted); padding:8px 12px; display:none}
-      .typing.show{display:block}
-      .composer{
-        display:flex; gap:8px; padding:10px; border-top:1px solid var(--border); background:#0f131b;
-      }
-      textarea{
-        flex:1; resize:none; min-height:44px; max-height:140px;
-        padding:10px 12px; border:1px solid var(--border); border-radius:10px;
-        background:#0d1118; color:var(--text);
-      }
-      button{
-        padding:0 14px; border:none; border-radius:10px; cursor:pointer;
-        background:var(--primary); color:white; font-weight:600;
-      }
-      button:disabled{opacity:.6; cursor:not-allowed}
-      .toolbar{display:flex; gap:8px; align-items:center}
-      .mini{opacity:.7; background:#1b1f2a}
+/* General Reset */
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #000;
+  color: #fff;
+}
 
-      /* Game area */
-      .game-wrap{
-        position:relative; border:1px solid var(--border); border-radius:12px; overflow:hidden; background:black;
-      }
-      /* We embed the game in an iframe and auto zoom-out instead of stretch */
-      #game-frame{
-        position:absolute; inset:0; width:100%; height:100%; border:0; background:black;
-        transform-origin: top left; /* we’ll scale from top-left and center with JS */
-      }
-      /* FPS box — click-through */
-      .fps-box{
-        position:absolute; right:10px; top:10px; z-index:20;
-        background: var(--fps-bg); color:#e9f2ff; font-weight:700;
-        border:1px solid rgba(30,144,255,.35); border-radius:8px;
-        padding:6px 10px; pointer-events:none; user-select:none;
-        box-shadow: 0 6px 18px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
-        font-variant: tabular-nums;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="page">
-      <!-- GOD CONTROLLER (LLM chat) -->
-      <section class="gc" id="gc">
-        <header>
-          <h1>God Controller</h1>
-          <div class="toolbar">
-            <span class="hint">Type <code>/gc</code> commands • e.g. <code>/gc spawn unicorn 5</code></span>
-            <button class="mini" id="toggle-transp">50% BG</button>
-            <button class="mini" id="minimize">Min</button>
-          </div>
-        </header>
+/* HUD */
+#hud {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background: rgba(0,0,0,0.6);
+  padding: 5px 10px;
+  border-radius: 5px;
+  display: flex;
+  gap: 1rem;
+  font-size: 14px;
+}
 
-        <div class="chat">
-          <div id="messages" class="messages">
-            <div class="msg assistant">Hello! I’m your in‑game God Controller. Ask for spawns, teleports, loot, announcements, etc. Prefix commands with <b>/gc</b>.</div>
-          </div>
-          <div id="typing" class="typing">AI is thinking…</div>
-          <div class="composer">
-            <textarea id="input" placeholder="Message or /gc command…" rows="1" autofocus></textarea>
-            <button id="send">Send</button>
-          </div>
-        </div>
-      </section>
+/* Chat Log */
+#chat-log {
+  position: fixed;
+  bottom: 50px;
+  left: 10px;
+  width: 320px;
+  max-height: 200px;
+  overflow-y: auto;
+  background: rgba(0,0,0,0.7);
+  padding: 5px;
+  border-radius: 4px;
+  font-size: 13px;
+}
 
-      <!-- GAME -->
-      <section class="game-wrap">
-        <div id="fps" class="fps-box">FPS — 60</div>
-        <!-- Loads your ElderScape game (already at /public/game/public/index.html) -->
-        <iframe id="game-frame" src="/game/public/index.html" allow="cross-origin-isolated; clipboard-read; clipboard-write"></iframe>
-      </section>
-    </div>
+.chat-line {
+  margin-bottom: 3px;
+}
 
-    <!-- Chat frontend (Cloudflare template behavior) -->
-    <script src="/chat.js"></script>
-    <!-- Bridge for chat <-> game, scaling, fps -->
-    <script src="/game-bridge.js"></script>
-    <script>
-      // Minimal glue so our local chat UI in this page mirrors /chat.js behavior if needed
-      (function(){
-        // If /chat.js already wires its own UI, we skip. Otherwise, wire this simple inline chat.
-        if (window.__LLM_CHAT_BOUND__) return;
-        const msgs = document.getElementById('messages');
-        const input = document.getElementById('input');
-        const send  = document.getElementById('send');
-        const typing = document.getElementById('typing');
+.chat-tag {
+  font-weight: bold;
+}
 
-        function add(role, text){
-          const div = document.createElement('div');
-          div.className = 'msg ' + (role === 'user' ? 'user' : 'assistant');
-          div.textContent = text;
-          msgs.appendChild(div);
-          msgs.scrollTop = msgs.scrollHeight;
-        }
+.chat-world   { color: #6cf; }
+.chat-public  { color: #0f0; }
+.chat-friends { color: #fc0; }
+.chat-group   { color: #f6f; }
+.chat-npc     { color: #ff6; }
+.chat-system  { color: #ccc; }
 
-        async function submit(){
-          const text = input.value.trim();
-          if(!text) return;
+/* Chat Input */
+#chat-input-bar {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  width: 320px;
+  display: flex;
+}
 
-          // Forward /gc commands to the game immediately
-          if (text.startsWith('/gc')) {
-            window.GameBridge?.sendGC(text.slice(3).trim());
-            add('user', text);
-            input.value = '';
-            return;
-          }
+#chat-input {
+  flex: 1;
+  padding: 5px;
+  font-size: 13px;
+}
 
-          add('user', text);
-          input.value = '';
-          typing.classList.add('show');
+#chat-send {
+  padding: 5px 10px;
+  background: #444;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
 
-          // Use the template’s API if available
-          try{
-            const res = await fetch('/api/chat', {
-              method:'POST',
-              headers:{'Content-Type':'application/json'},
-              body: JSON.stringify({messages:[{role:'user', content:text}]})
-            });
-            const reader = res.body.getReader();
-            const dec = new TextDecoder();
-            let acc = '';
-            const holder = document.createElement('div');
-            holder.className = 'msg assistant';
-            holder.textContent = '';
-            msgs.appendChild(holder);
-            msgs.scrollTop = msgs.scrollHeight;
+/* NPC Overlay */
+#npc-dialogue.hidden {
+  display: none;
+}
 
-            while(true){
-              const {done, value} = await reader.read();
-              if(done) break;
-              const chunk = dec.decode(value, {stream:true});
-              for (const line of chunk.split('\n')){
-                try{
-                  const j = JSON.parse(line);
-                  if (j.response){
-                    acc += j.response;
-                    holder.textContent = acc;
-                    msgs.scrollTop = msgs.scrollHeight;
-                  }
-                }catch{}
-              }
-            }
-          }catch(e){
-            add('assistant', 'Sorry, there was an error.');
-          }finally{
-            typing.classList.remove('show');
-          }
-        }
+#npc-dialogue {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
 
-        send.addEventListener('click', submit);
-        input.addEventListener('keydown', (e)=>{
-          if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); submit(); }
-        });
+.npc-dialogue-card {
+  background: #222;
+  padding: 20px;
+  border-radius: 6px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 0 15px #000;
+}
 
-        // Minimize + transparent controls
-        const gc = document.getElementById('gc');
-        document.getElementById('minimize').onclick = ()=>{
-          gc.style.height = gc.style.height ? '' : '44px';
-          gc.querySelector('header').style.borderBottom = gc.style.height ? 'none' : '';
-          gc.querySelector('.chat').style.display = gc.style.height ? 'none' : '';
-        };
-        document.getElementById('toggle-transp').onclick = ()=>{
-          const current = getComputedStyle(gc).backgroundColor;
-          // toggle between 50% and solid
-          gc.style.background = current.includes('rgba') ? 'var(--panel)' : 'rgba(17,21,29,.5)';
-        };
-        window.__LLM_CHAT_BOUND__ = true;
-      })();
-    </script>
-  </body>
+#npc-text {
+  margin-bottom: 15px;
+  font-size: 15px;
+}
+
+#npc-options button {
+  display: block;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #333;
+  border: 1px solid #555;
+  color: white;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+#npc-options button:hover {
+  background: #444;
+}
+
+/* Dim game canvas when NPC active */
+body.npc-active #game-canvas {
+  filter: blur(2px) brightness(0.8);
+}
+</style>
+</head>
+<body>
+
+<canvas id="game-canvas" width="1280" height="720"></canvas>
+
+<!-- HUD -->
+<div id="hud">
+  <span id="hud-health">❤️ 100</span>
+  <span id="hud-gold">💰 0</span>
+  <span id="hud-quests">📜 0</span>
+</div>
+
+<!-- Chat -->
+<div id="chat-log"></div>
+<div id="chat-input-bar">
+  <input type="text" id="chat-input" placeholder="Type a message..." />
+  <button id="chat-send">Send</button>
+</div>
+
+<!-- NPC Dialogue -->
+<div id="npc-dialogue" class="hidden">
+  <div class="npc-dialogue-card">
+    <div id="npc-text"></div>
+    <div id="npc-options"></div>
+  </div>
+</div>
+
+<script src="/game-bridge.js"></script>
+</body>
 </html>
