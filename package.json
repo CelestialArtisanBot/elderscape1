@@ -4,10 +4,10 @@
   "description": "ElderScape Game Server and Client",
   "main": "server.js",
   "scripts": {
-  "start": "node server.js",
-  "dev": "nodemon server.js",
-  "build": "mkdir -p dist && cp -r public/* dist/"
-}
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "build": "mkdir -p dist && cp -r public/* dist/"
+  },
   "author": "",
   "license": "MIT",
   "dependencies": {
