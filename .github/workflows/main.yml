@@ -1,13 +1,13 @@
-name: Deploy to Cloudflare Workers
+name: Deploy elderscape2 to Cloudflare Workers
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
   deploy:
+    name: Deploy to Cloudflare
     runs-on: ubuntu-latest
 
     steps:
@@ -19,15 +19,11 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install Wrangler
+        run: npm install -g wrangler@3
 
-      - name: Build project
-        run: npm run build
-
-      - name: Publish to Cloudflare Workers
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: publish --name elderscape2
+      - name: Publish to Cloudflare
+        run: wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: 38qOjL_uBzxjfeGVfk_RuTxFl28oufzov20xD6w1
+          CLOUDFLARE_ACCOUNT_ID: deee1798a610f6c7842da5b3777ef377
