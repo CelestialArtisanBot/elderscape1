@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "build": "mkdir -p dist && cp -r public/* dist/"
+    "build": "mkdir -p dist && cp -r public/* dist/",
+    "deploy": "wrangler deploy"
   },
   "author": "",
   "license": "MIT",
