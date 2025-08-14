@@ -25,5 +25,5 @@ jobs:
       - name: Publish to Cloudflare
         run: wrangler deploy
         env:
-          CLOUDFLARE_API_TOKEN: 38qOjL_uBzxjfeGVfk_RuTxFl28oufzov20xD6w1
-          CLOUDFLARE_ACCOUNT_ID: deee1798a610f6c7842da5b3777ef377
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
