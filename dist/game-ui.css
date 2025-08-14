@@ -1,0 +1,125 @@
+/* ===== ElderScape UI Styles ===== */
+
+/* General Reset */
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #000;
+  color: #fff;
+}
+
+/* HUD */
+#hud {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background: rgba(0,0,0,0.6);
+  padding: 5px 10px;
+  border-radius: 5px;
+  display: flex;
+  gap: 1rem;
+  font-size: 14px;
+}
+
+/* Chat Log */
+#chat-log {
+  position: fixed;
+  bottom: 50px;
+  left: 10px;
+  width: 320px;
+  max-height: 200px;
+  overflow-y: auto;
+  background: rgba(0,0,0,0.7);
+  padding: 5px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.chat-line {
+  margin-bottom: 3px;
+}
+
+.chat-tag {
+  font-weight: bold;
+}
+
+.chat-world   { color: #6cf; }
+.chat-public  { color: #0f0; }
+.chat-friends { color: #fc0; }
+.chat-group   { color: #f6f; }
+.chat-npc     { color: #ff6; }
+.chat-system  { color: #ccc; }
+
+/* Chat Input */
+#chat-input-bar {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  width: 320px;
+  display: flex;
+}
+
+#chat-input {
+  flex: 1;
+  padding: 5px;
+  font-size: 13px;
+}
+
+#chat-send {
+  padding: 5px 10px;
+  background: #444;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+/* NPC Overlay */
+#npc-dialogue.hidden {
+  display: none;
+}
+
+#npc-dialogue {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.npc-dialogue-card {
+  background: #222;
+  padding: 20px;
+  border-radius: 6px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 0 15px #000;
+}
+
+#npc-text {
+  margin-bottom: 15px;
+  font-size: 15px;
+}
+
+#npc-options button {
+  display: block;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #333;
+  border: 1px solid #555;
+  color: white;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+#npc-options button:hover {
+  background: #444;
+}
+
+/* Dim game canvas when NPC active */
+body.npc-active #game-canvas {
+  filter: blur(2px) brightness(0.8);
+}

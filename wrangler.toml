@@ -1,0 +1,8 @@
+name = "elderscape2"
+main = "worker.js"
+compatibility_date = "2025-08-13"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "elderscape2-db"
+database_id = "e13a007e-84f3-49e5-861f-5c58c73fcce2"
